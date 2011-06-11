@@ -360,8 +360,13 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let ((,def (*make-structure-definition ',name nil ,include
 					       ',constructors
-					       ,(when print-function
+					       ,(cond
+						 ((not print-function) nil)
+						 ((and (consp print-function)
+						       (eql (car print-function) 'lambda))
 						  `#',print-function)
+						 ((symbolp print-function)
+						  `',print-function))
 					       nil ',slots)))
 	 (setf (get ',name 'structure-definition) ,def)
 	 (setf (get ',name 'lisp::structure-documentation) ,doc)
