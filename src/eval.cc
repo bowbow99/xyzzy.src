@@ -274,7 +274,7 @@ special_bind::special_bind (lisp *v, char *f, int nv)
 inline
 special_bind::~special_bind ()
 {
-  for (int i = 0, j = 0; i < n; i += 2, j++)
+  for (int i = n - 2, j = n/2 - 1; i >= 0; i -= 2, j--)
     {
       assert (consp (vec[i]));
       assert (symbolp (xcar (vec[i])));
@@ -341,21 +341,26 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
   int i = 0, j = 0;
 
   if (nspecials)
-    for (e = lex.lex_var; e != lex.lex_ltail; e = xcdr (e))
-      {
-        lisp x = xcar (e);
-        if (consp (x) && symbolp (xcar (x))
-            && specialp (xcar (x)) && xcdr (x) != Qunbound)
-          {
-            lisp sym = xcar (x);
-            oflags[j++] = xsymbol_flags (sym) & SFdynamic_bind;
-            xsymbol_flags (sym) |= SFdynamic_bind;
-            save[i++] = x;
-            save[i++] = xsymbol_value (sym);
-            xsymbol_value (sym) = xcdr (x);
-            xcdr (x) = Qunbound;
-          }
-      }
+    {
+      lisp var = Qnil;
+      for (e = lex.lex_var; e != lex.lex_ltail; e = xcdr (e))
+        var = xcons (xcar (e), var);
+      for (e = var; consp (e); e = xcdr (e))
+        {
+          lisp x = xcar (e);
+          if (consp (x) && symbolp (xcar (x))
+              && specialp (xcar (x)) && xcdr (x) != Qunbound)
+            {
+              lisp sym = xcar (x);
+              oflags[j++] = xsymbol_flags (sym) & SFdynamic_bind;
+              xsymbol_flags (sym) |= SFdynamic_bind;
+              save[i++] = x;
+              save[i++] = xsymbol_value (sym);
+              xsymbol_value (sym) = xcdr (x);
+              xcdr (x) = Qunbound;
+            }
+        }
+    }
 
   if (nvars)
     {
@@ -1523,10 +1528,15 @@ lisp
 Fmacroexpand (lisp arg, lisp env)
 {
   protect_gc gcpro (arg);
-  do
-    arg = Fmacroexpand_1 (arg, env);
-  while (multiple_value::value (1) != Qnil);
-  multiple_value::clear ();
+  int n = 0;
+  while (1)
+    {
+      arg = Fmacroexpand_1 (arg, env);
+      if (multiple_value::value (1) == Qnil) break;
+      n++;
+    }
+  multiple_value::count () = 2;
+  multiple_value::value (1) = n > 0 ? Qt : Qnil;
   return arg;
 }
 

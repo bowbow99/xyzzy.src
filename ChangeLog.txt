@@ -1,4 +1,139 @@
+2011-01-30  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix abbreviate-display-string.
+	abbreviate-display-string で必要以上に文字列が省略されることがあるのを
+	修正。以下のようになる場合があった。
+	(abbreviate-display-string "D:/src/cmigemo-1.3c-MIT/src/wordlist.h" 40 t)
+	=> "D:/..."
+
+	string.cc の 1109 行目、以下のようになっていた。
+	  strcpy (le, "...");
+	  strcpy (le + 3, rb);
+	はじめの strcpy で '\0' が書き込まれ、その位置がちょうど rb と一致した
+	ときに発生した。
+
+2011-01-21  NANRI Masaoki  <southly@gmail.com>
+
+	* lisp : fix pipe-command.
+	「plink name@example.jp ls」と plink を利用しようとすると
+	「Unable to read from standard input: ハンドルが無効です。」
+	というエラーになるのを修正。
+
+	execute-shell-command の第二引数に文字列・nil以外の引数を渡すとファイル
+	名が空のファイルを開こうとするので、エラーになっていた模様。
+
+	* src : fix wheel icon.
+	なんとなくホイールボタンをクリックしたときのアイコンをいじってみた。
+
+	* src : fix multiple binding of special variables in let, let*.
+	http://d.hatena.ne.jp/bowbow99/20101127/1290818576
+	let や let* で同一のスペシャル変数に対して複数回の束縛を作ったときの値
+	がおかしいのを修正。
+	コンパイルしたときの動作は修正できていない。
+	(progn
+	  (defparameter *special* :global)
+	  (let ((*special* :local-1)
+	        (*special* :local-2))
+	    *special*))
+	=> :local-2
+
+	レキシカルな環境には逆順に登録されるので、スペシャル変数に値を設定する
+	前に順序を元に戻している。
+
+2011-01-05  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix let, let*.
+	http://d.hatena.ne.jp/bowbow99/20101127/1290818576
+	コンパイルしたときは値が変わることはないが、インタプリタと同様に逆順で
+	値をリストアするように修正。
+
+2011-01-04  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix special variables restore at the end of let, let*.
+	http://d.hatena.ne.jp/bowbow99/20101127/1290818576
+	let や let* で同一のスペシャル変数に対して複数回の束縛を作ると、スコー
+	プが外れたときに値が書き換わってしまうのを修正。
+	(progn
+	  (defparameter *special* :global)
+	  (let ((*special* :local-1)
+	        (*special* :local-2))
+	    *special*)
+	  *special*)
+	=> :global
+
+	値を保存するとき(src/eval.cc 347行目辺り)と逆順に値をリストアするように
+	した。
+
+2010-12-14  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix eol-code of zero size file.
+	ファイルサイズが 0 のときの (正確には改行がないファイルのときの) 改行コー
+	ドが常に CRLF になるのを修正し *default-eol-code* に基づいた改行コード
+	になるようにする。
+	xyzzy Part16 577
+
+2010-12-13  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix DLL loading (hhctrl.ocx).
+	JVNVU#707943: Windows プログラムの DLL 読み込みに脆弱性
+	http://jvn.jp/cert/JVNVU707943/index.html
+	の修正の続き。
+	hhctrl.ocx のロードは静的変数の初期化時に行われるため、先の修正の効果が
+	及ばない。よって、ロードのタイミングを関数 html-help 呼び出し時に変更。
+
+	* src : fix DLL loading.
+	JVNVU#707943: Windows プログラムの DLL 読み込みに脆弱性
+	http://jvn.jp/cert/JVNVU707943/index.html
+	の修正。
+	統合アーカイバの DLL と WSOCK32.DLL と ctl3d32.dll が対象。
+	foreign:define-dll-entry (si:load-dll-module) で指定する DLL も対象だが、
+	こちらはフルパスで指定するのが望ましいだろう。
+
+2010-12-12  NANRI Masaoki  <southly@gmail.com>
+
+	* src : update zlib(version 1.2.5).
+	zlibをバージョン1.2.5にアップデート。
+
+	* lisp : support lzma and xz in filer.
+	lzma および xz の圧縮と展開をファイラから利用できるように修正。
+
+	* src : support lzma and xz.
+	tar32.dll Ver2.35 から利用できるようになった lzma および xz の圧縮と展
+	開に対応。
+
+2010-12-11  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix hash-table.
+	rehash 時に不要なハッシュオブジェクトのエントリーを NULL に設定している
+	ので、サイズも 0 に設定する。hash-table のマークフェーズ(data.ccの613行
+	目あたり)で NULL を参照するのを防止する。
+	以下のような hash-table が rehash した後の GC のタイミングで落ちる現象
+	がおそらく解消すると思われる。
+	http://twitter.com/miyamuko/status/14229437114
+	http://d.hatena.ne.jp/knenet/20091223/1261578863
+
+2010-12-10  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix (cdr '#1='#1#) printing.
+	http://blog.bugyo.tk/lyrical/archives/610
+	http://blog.practical-scheme.net/gauche/20100609-curious-circular-list
+	「(cdr '#1='#1#)」の評価結果の印字でスタックオーバーフローするのを修正。
+	'#1='#1#              => #1='#1#
+	(cdr '#1='#1#)        => #1=((quote . #1#))
+	(cdr '#1=(quote #1#)) => #1=((quote . #1#))
+	(cdr '#1=(q #1#))     => #1=((q . #1#))
+
 2010-12-01  NANRI Masaoki  <southly@gmail.com>
+
+	* src : fix macroexpand.
+	http://twitter.com/bowbow99/status/9887141152694272
+	二番目の戻り値が返っていなかったのを修正。
+	(macroexpand '(push 1 x))
+	=> (setq x (cons 1 x))
+	=> t
+	(macroexpand '(setq x (cons 1 x)))
+	=> (setq x (cons 1 x))
+	=> nil
 
 	* src : fix flet, labels, macrolet.
 	http://twitter.com/bowbow99/status/8011887295856640
