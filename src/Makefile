@@ -174,7 +174,7 @@ FINAL_TARGET=$(OUTDIR)/$(BUILD)
 
 OUTDIR=r
 OBJS=$(OBJS: = r/)
-CXXFLAGS=-Ob1 -Og -Oi -Ot -Oy -Gs -Gy -Gz $(CXXOPT) -W3 -MT -vmb -arch:SSE2 $(INC) $(DEFS) -Fo$(OUTDIR)/
+CXXFLAGS=-Ob1 -O2 -Oi -Ot -Oy -Gs -Gy -Gz $(CXXOPT) -W3 -MT -vmb -arch:SSE2 $(INC) $(DEFS) -Fo$(OUTDIR)/
 LDFLAGS=-stack:0x2000000 -map:$(OUTDIR)/xyzzy.map -incremental:no -fixed -opt:ref
 FINAL_TARGET=../$(BUILD)
 
