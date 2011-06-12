@@ -65,6 +65,35 @@ stop. Otherwise, it prints "N tests all passed." message.
   (expect-prints (prin1 bar)
     "#<bar 1 :hello>"))
 
+(defstruct (baz (:print-function print-baz))
+  x y)
+
+(defun print-baz (obj stream n)
+  (format stream "#<baz ~S>" (baz-x obj)))
+
+(let ((baz (make-baz)))
+  (expect-prints (princ baz)
+    "#<baz nil>")
+  (expect-prints (prin1 baz)
+    "#<baz nil>"))
+
+(defun print-baz (obj stream n)
+  (format stream "#<baz  *print-readably* ~S  *print-escape* ~S>"
+    *print-readably*
+    *print-escape*))
+
+(let ((baz (make-baz)))
+  (expect-prints (princ baz)
+    "#<baz  *print-readably* nil  *print-escape* nil>")
+  (expect-prints (prin1 baz)
+    "#<baz  *print-readably* nil  *print-escape* t>")
+  (let ((*print-readably* t))
+    (expect-prints (princ baz)
+      "#<baz  *print-readably* nil  *print-escape* nil>")
+    (expect-prints (prin1 baz)
+      "#<baz  *print-readably* t  *print-escape* t>")))
+
+
 ;;;;
 ;;;; * Condition without :report
 
