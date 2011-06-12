@@ -1,6 +1,6 @@
 
 # define VC++ version (4, 6, or 7)
-VCVER=10
+VCVER=9
 
 .SUFFIXES: .cc .rc .res .d
 
