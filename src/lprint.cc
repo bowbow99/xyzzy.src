@@ -1432,7 +1432,9 @@ print_struct_data (wStream &stream, const print_control &pc,
     {
       if (pc.readably || pc.escape
           || xstrdef_report (def) == Qnil)
-        print_struct_data_readably (stream, pc, object, def, level);
+        {
+          print_struct_data_readably (stream, pc, object, def, level);
+        }
       else
         {
           protect_gc gcpro (object);
@@ -1447,7 +1449,9 @@ print_struct_data (wStream &stream, const print_control &pc,
   else
     {
       if (xstrdef_print_function (def) == Qnil)
-        print_struct_data_readably (stream, pc, object, def, level);
+        {
+          print_struct_data_readably (stream, pc, object, def, level);
+        }
       else
         {
           wstream_stream w (stream);
