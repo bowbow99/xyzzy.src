@@ -1427,26 +1427,33 @@ print_struct_data (wStream &stream, const print_control &pc,
                    lisp object, int level)
 {
   lisp def = xstrdata_def (object);
-  int condp = (Fsi_structure_subtypep (def, xsymbol_value (QCcondition)) != Qnil
-               && xstrdef_report (def) != Qnil);
 
-  if (pc.readably || pc.escape
-      || (xstrdef_print_function (def) == Qnil && !condp))
-    print_struct_data_readably (stream, pc, object, def, level);
-  else if (condp)
+  if (Fsi_structure_subtypep (def, xsymbol_value (QCcondition)) != Qnil)
     {
-      protect_gc gcpro (object);
-      if (!special_condition_report (stream, object))
+      if (pc.readably || pc.escape
+          || xstrdef_report (def) == Qnil)
+        print_struct_data_readably (stream, pc, object, def, level);
+      else
         {
-          wstream_stream w (stream);
-          funcall_2 (xstrdef_report (def), object, xsymbol_value (Vwstream_stream));
+          protect_gc gcpro (object);
+          if (!special_condition_report (stream, object))
+            {
+              wstream_stream w (stream);
+              funcall_2 (xstrdef_report (def), object,
+                         xsymbol_value (Vwstream_stream));
+            }
         }
     }
   else
     {
-      wstream_stream w (stream);
-      funcall_3 (xstrdef_print_function (def), object,
-                 xsymbol_value (Vwstream_stream), make_fixnum (level));
+      if (xstrdef_print_function (def) == Qnil)
+        print_struct_data_readably (stream, pc, object, def, level);
+      else
+        {
+          wstream_stream w (stream);
+          funcall_3 (xstrdef_print_function (def), object,
+                     xsymbol_value (Vwstream_stream), make_fixnum (level));
+        }
     }
 }
 
