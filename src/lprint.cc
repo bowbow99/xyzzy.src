@@ -1406,6 +1406,23 @@ public:
 };
 
 static void
+print_struct_data_readably (wStream &stream, const print_control &pc,
+                            lisp object, lisp def, int level)
+{
+  stream.add("#S(");
+  print_sexp (stream, pc, xstrdef_name (def), level);
+  int n = min (xstrdata_nslots (object), xstrdef_nslots (def));
+  for (int i = 0; i < n; i++)
+    {
+      stream.add(' ');
+      simple_print_string (stream, xsymbol_name (xstrdef_slotdesc (def) [i].name));
+      stream.add(' ');
+      print_sexp (stream, pc, xstrdata_data (object) [i], level);
+    }
+  stream.add(')');
+}
+
+static void
 print_struct_data (wStream &stream, const print_control &pc,
                    lisp object, int level)
 {
@@ -1415,19 +1432,7 @@ print_struct_data (wStream &stream, const print_control &pc,
 
   if (pc.readably || pc.escape
       || (xstrdef_print_function (def) == Qnil && !condp))
-    {
-      stream.add ("#S(");
-      print_sexp (stream, pc, xstrdef_name (def), level);
-      int n = min (xstrdata_nslots (object), xstrdef_nslots (def));
-      for (int i = 0; i < n; i++)
-        {
-          stream.add (' ');
-          simple_print_string (stream, xsymbol_name (xstrdef_slotdesc (def) [i].name));
-          stream.add (' ');
-          print_sexp (stream, pc, xstrdata_data (object) [i], level);
-        }
-      stream.add (')');
-    }
+    print_struct_data_readably (stream, pc, object, def, level);
   else if (condp)
     {
       protect_gc gcpro (object);
