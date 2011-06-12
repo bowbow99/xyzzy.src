@@ -1451,6 +1451,9 @@ print_struct_data (wStream &stream, const print_control &pc,
       else
         {
           wstream_stream w (stream);
+          dynamic_bind dynb_readably (Vprint_readably, (pc.readably ? Qt : Qnil));
+          dynamic_bind dynb_escape (Vprint_escape, (pc.escape ? Qt : Qnil));
+
           funcall_3 (xstrdef_print_function (def), object,
                      xsymbol_value (Vwstream_stream), make_fixnum (level));
         }
