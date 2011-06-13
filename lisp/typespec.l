@@ -47,9 +47,6 @@
 	       'lisp::type-documentation)
      ',name))
 
-(deftype eql (x)
-  `(member (,x)))
-
 (deftype fixnum ()
   `(integer ,most-negative-fixnum ,most-positive-fixnum))
 

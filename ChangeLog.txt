@@ -1,4 +1,13 @@
+2011-06-13  bowbow99  <bowbow99@gmail.com>
+
+	* lisp : fix type-specifier eql
+	deftype が間違っているので si:canonicalize-type するとおかしくなってい
+	たのを修正。
+	(si:canonicalize-type '(eql 3))
+	=> (member (3))  ; 間違い
+
 2011-06-12  bowbow99  <bowbow99@gmail.com>
+
 	* src : modify print_struct_data
 	構造体を出力する際に print-function があったら常に使うようにした。
 	http://http://www.lispworks.com/documentation/HyperSpec/Body/m_defstr.htm
