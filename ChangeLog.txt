@@ -1,3 +1,12 @@
+2011-06-12  bowbow99  <bowbow99@gmail.com>
+	* src : modify print_struct_data
+	構造体を出力する際に print-function があったら常に使うようにした。
+	http://http://www.lispworks.com/documentation/HyperSpec/Body/m_defstr.htm
+
+	※コンディションの report は *print-escape* が non-nil の場合のみ使用
+	される。
+	http://www.lispworks.com/documentation/HyperSpec/Body/m_defi_5.htm
+
 2011-01-30  NANRI Masaoki  <southly@gmail.com>
 
 	* src : fix abbreviate-display-string.

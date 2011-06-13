@@ -1406,42 +1406,61 @@ public:
 };
 
 static void
+print_struct_data_readably (wStream &stream, const print_control &pc,
+                            lisp object, lisp def, int level)
+{
+  stream.add("#S(");
+  print_sexp (stream, pc, xstrdef_name (def), level);
+  int n = min (xstrdata_nslots (object), xstrdef_nslots (def));
+  for (int i = 0; i < n; i++)
+    {
+      stream.add(' ');
+      simple_print_string (stream, xsymbol_name (xstrdef_slotdesc (def) [i].name));
+      stream.add(' ');
+      print_sexp (stream, pc, xstrdata_data (object) [i], level);
+    }
+  stream.add(')');
+}
+
+static void
 print_struct_data (wStream &stream, const print_control &pc,
                    lisp object, int level)
 {
   lisp def = xstrdata_def (object);
-  int condp = (Fsi_structure_subtypep (def, xsymbol_value (QCcondition)) != Qnil
-               && xstrdef_report (def) != Qnil);
 
-  if (pc.readably || pc.escape
-      || (xstrdef_print_function (def) == Qnil && !condp))
+  if (Fsi_structure_subtypep (def, xsymbol_value (QCcondition)) != Qnil)
     {
-      stream.add ("#S(");
-      print_sexp (stream, pc, xstrdef_name (def), level);
-      int n = min (xstrdata_nslots (object), xstrdef_nslots (def));
-      for (int i = 0; i < n; i++)
+      if (pc.readably || pc.escape
+          || xstrdef_report (def) == Qnil)
         {
-          stream.add (' ');
-          simple_print_string (stream, xsymbol_name (xstrdef_slotdesc (def) [i].name));
-          stream.add (' ');
-          print_sexp (stream, pc, xstrdata_data (object) [i], level);
+          print_struct_data_readably (stream, pc, object, def, level);
         }
-      stream.add (')');
-    }
-  else if (condp)
-    {
-      protect_gc gcpro (object);
-      if (!special_condition_report (stream, object))
+      else
         {
-          wstream_stream w (stream);
-          funcall_2 (xstrdef_report (def), object, xsymbol_value (Vwstream_stream));
+          protect_gc gcpro (object);
+          if (!special_condition_report (stream, object))
+            {
+              wstream_stream w (stream);
+              funcall_2 (xstrdef_report (def), object,
+                         xsymbol_value (Vwstream_stream));
+            }
         }
     }
   else
     {
-      wstream_stream w (stream);
-      funcall_3 (xstrdef_print_function (def), object,
-                 xsymbol_value (Vwstream_stream), make_fixnum (level));
+      if (xstrdef_print_function (def) == Qnil)
+        {
+          print_struct_data_readably (stream, pc, object, def, level);
+        }
+      else
+        {
+          wstream_stream w (stream);
+          dynamic_bind dynb_readably (Vprint_readably, (pc.readably ? Qt : Qnil));
+          dynamic_bind dynb_escape (Vprint_escape, (pc.escape ? Qt : Qnil));
+
+          funcall_3 (xstrdef_print_function (def), object,
+                     xsymbol_value (Vwstream_stream), make_fixnum (level));
+        }
     }
 }
 
