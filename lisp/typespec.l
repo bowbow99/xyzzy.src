@@ -505,18 +505,3 @@
     (t
      (error "~Sの~Sへの型変換はサポートされていません"
        object (if (null (cdr type)) (car type) type)))))
-
-(defun proclaim (decl-spec)
-  (when (eq (car decl-spec) 'special)
-    (mapc #'(lambda (x)
-	      (si:*make-special x))
-	  (cdr decl-spec))))
-
-(defmacro declaim (&rest decl-specs)
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (cons 'progn
-	  (mapcan #'(lambda (decl-spec)
-		      (when (eq (car decl-spec) 'special)
-			(mapcar #'(lambda (x) `(defvar ,x))
-				(cdr decl-spec))))
-		  decl-specs))))
