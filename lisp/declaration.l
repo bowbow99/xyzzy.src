@@ -42,18 +42,17 @@
     (setf (cdr (assoc key *optimize-quality*)) value)))
 
 (defun proclaim (decl-spec)
-  (let ((identifier (car decl-spec)))
+  (let ((identifier (car decl-spec))
+        (do-nothing (lambda (x) (declare (ignore x)))))
     (cons identifier
           (mapc (case identifier
                   (special #'si:*make-special)
                   (optimize #'set-optimize-quality)
                   (declaration #'register-declaration-identifier)
                   (t
-                   (if (member identifier *ignorable-declarations*)
-                     (lambda (x)
-                       (declare (ignore x))
-                       #|do nothing|#)
-                     (error "Unknown/unsupported declaration: ~S" identifier))))
+                   (unless (member identifier *ignorable-declarations*)
+                     (error "Unknown/unsupported declaration: ~S" identifier))
+                   do-nothing))
                 (cdr decl-spec)))))
 
 (defmacro declaim (&rest decl-specs)
