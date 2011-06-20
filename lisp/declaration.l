@@ -49,6 +49,9 @@
                   (special #'si:*make-special)
                   (optimize #'set-optimize-quality)
                   (declaration #'register-declaration-identifier)
+                  ((dynamic-extent ignore ignorable)
+                   (warn "グローバルに `~S' はダメっす" identifier)
+                   do-nothing)
                   (t
                    (unless (member identifier *ignorable-declarations*)
                      (warn "Unknown/unsupported declaration: ~S" identifier))
