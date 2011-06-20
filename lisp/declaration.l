@@ -51,7 +51,7 @@
                   (declaration #'register-declaration-identifier)
                   (t
                    (unless (member identifier *ignorable-declarations*)
-                     (error "Unknown/unsupported declaration: ~S" identifier))
+                     (warn "Unknown/unsupported declaration: ~S" identifier))
                    do-nothing))
                 (cdr decl-spec)))))
 
