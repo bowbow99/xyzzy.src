@@ -13,6 +13,13 @@
 
 (in-package "system")
 
+(defparameter *optimize-quality*
+  '((speed . 2)
+    (safety . 1)
+    (debug . 0)
+    (space . 1)
+    (compilation-speed . 1)))
+
 (defun proclaim (decl-spec)
   (case (car decl-spec)
     (special
@@ -20,14 +27,10 @@
     (t nil)))
 
 (defmacro declaim (&rest decl-specs)
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (cons 'progn
-          (mapcan #'(lambda (decl-spec)
-                      (when (eq (car decl-spec) 'special)
-                        (mapcar #'(lambda (x) `(defvar ,x))
-                          (cdr decl-spec))))
-              decl-specs))))
-
+  `(eval-when (:compile-toplevel :execute :load-toplevel)
+     ,@(mapcar (lambda (decl-spec)
+                 `(proclaim ',decl-spec))
+             decl-specs)))
 
 (provide "declaration")
 ;;; declaration.l ends here.
