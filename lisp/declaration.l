@@ -20,7 +20,6 @@
     (space . 1)
     (compilation-speed . 1)))
 
-
 (defun set-optimize-quality (decl)
   (multiple-value-bind (key value)
       (cond ((symbolp decl) (values decl 3))
@@ -34,12 +33,13 @@
     (setf (cdr (assoc key *optimize-quality*)) value)))
 
 (defun proclaim (decl-spec)
-  (cons (car decl-spec)
-        (mapc (case (car decl-spec)
-                (special #'si:*make-special)
-                (optimize #'set-optimize-quality)
-                (t (error "Unknown/unsupported declaration: ~S" (car decl-spec))))
-              (cdr decl-spec))))
+  (let ((identifier (car decl-spec)))
+    (cons identifier
+          (mapc (case identifier
+                  (special #'si:*make-special)
+                  (optimize #'set-optimize-quality)
+                  (t (error "Unknown/unsupported declaration: ~S" identifier)))
+                (cdr decl-spec)))))
 
 (defmacro declaim (&rest decl-specs)
   `(eval-when (:compile-toplevel :execute :load-toplevel)
