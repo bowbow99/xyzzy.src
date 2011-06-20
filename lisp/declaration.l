@@ -34,12 +34,12 @@
     (setf (cdr (assoc key *optimize-quality*)) value)))
 
 (defun proclaim (decl-spec)
-  (case (car decl-spec)
-    (special
-     (mapc #'si:*make-special (cdr decl-spec)))
-    (optimize
-     (mapc #'set-optimize-quality (cdr decl-spec)))
-    (t nil)))
+  (cons (car decl-spec)
+        (mapc (case (car decl-spec)
+                (special #'si:*make-special)
+                (optimize #'set-optimize-quality)
+                (t (error "Unknown/unsupported declaration: ~S" (car decl-spec))))
+              (cdr decl-spec))))
 
 (defmacro declaim (&rest decl-specs)
   `(eval-when (:compile-toplevel :execute :load-toplevel)
