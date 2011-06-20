@@ -8,6 +8,7 @@
 (si:*load-library "list") (gc)
 (si:*load-library "setf") (gc)
 (si:*load-library "typespec") (gc)
+(si:*load-library "declaration") (gc)
 (si:*load-library "array") (gc)
 (si:*load-library "number") (gc)
 (si:*load-library "handler") (gc)
