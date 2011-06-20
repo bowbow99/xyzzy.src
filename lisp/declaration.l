@@ -14,10 +14,10 @@
 (in-package "system")
 
 (defun proclaim (decl-spec)
-  (when (eq (car decl-spec) 'special)
-    (mapc #'(lambda (x)
-              (si:*make-special x))
-          (cdr decl-spec))))
+  (case (car decl-spec)
+    (special
+     (mapc #'si:*make-special (cdr decl-spec)))
+    (t nil)))
 
 (defmacro declaim (&rest decl-specs)
   (eval-when (:compile-toplevel :load-toplevel :execute)
