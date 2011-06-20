@@ -13,6 +13,15 @@
 
 (in-package "system")
 
+(defvar *ignorable-declarations* nil
+  "List of declaration identifiers those are declared as `declaration`.")
+
+(defun register-declaration-identifier (identifiers)
+  (dolist (id identifiers)
+    (unless (symbolp id)
+      (error 'type-error :datum id :expected-type 'symbol))
+    (pushnew id *ignorable-declarations*)))
+
 (defparameter *optimize-quality*
   '((speed . 2)
     (safety . 1)
@@ -38,7 +47,13 @@
           (mapc (case identifier
                   (special #'si:*make-special)
                   (optimize #'set-optimize-quality)
-                  (t (error "Unknown/unsupported declaration: ~S" identifier)))
+                  (declaration #'register-declaration-identifier)
+                  (t
+                   (if (member identifier *ignorable-declarations*)
+                     (lambda (x)
+                       (declare (ignore x))
+                       #|do nothing|#)
+                     (error "Unknown/unsupported declaration: ~S" identifier))))
                 (cdr decl-spec)))))
 
 (defmacro declaim (&rest decl-specs)
