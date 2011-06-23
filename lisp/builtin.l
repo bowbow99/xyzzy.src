@@ -439,6 +439,8 @@
 (si::defun-builtin *make-constant (symbol))
 (si::defun-builtin *make-special (symbol))
 (si::defun-builtin *fset (symbol function))
+(si::defun-builtin *set-function-name (function name))
+(si::defun-builtin *get-function-name (function))
 (si::defun-builtin *bq-completely-process (form))
 (si::defun-builtin *remf (place indicator))
 (si::defun-builtin *putprop (symbol value indicator))
