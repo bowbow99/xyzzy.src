@@ -54,7 +54,7 @@
                    do-nothing)
                   (t
                    (unless (member identifier *ignorable-declarations*)
-                     (warn "Unknown/unsupported declaration: ~S" identifier))
+                     (warn "‚»‚ÌéŒ¾’m‚ç‚ñ‚©‚ç–³‹‚µ‚Æ‚­: ~S" identifier))
                    do-nothing))
                 (cdr decl-spec)))))
 
