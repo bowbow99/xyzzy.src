@@ -49,6 +49,15 @@
                   (special #'si:*make-special)
                   (optimize #'set-optimize-quality)
                   (declaration #'register-declaration-identifier)
+                  ;; FIXME: Following four declarations aren't implemented
+                  (inline
+                   do-nothing)
+                  (notinline
+                   do-nothing)
+                  (type
+                   do-nothing)
+                  (ftype
+                   do-nothing)
                   ((dynamic-extent ignore ignorable)
                    (warn "グローバルに `~S' はダメっす" identifier)
                    do-nothing)
