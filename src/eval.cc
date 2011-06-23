@@ -1297,6 +1297,14 @@ Fsi_set_function_name (lisp closure, lisp name)
   return closure;
 }
 
+lisp
+Fsi_get_function_name (lisp closure)
+{
+  if (!closurep (closure))
+    FEtype_error (closure, Qclosure);
+  return xclosure_name(closure);
+}
+
 static lisp
 flet (lisp arg, lex_env &olex, lex_env &nlex, int macrop)
 {
