@@ -1,3 +1,8 @@
+2011-06-23  bowbow99  <bowbow99@gmail.com>
+
+	* src : add si:*get-function-name
+	クロージャから名前を取り出す関数を追加。
+
 2011-06-13  bowbow99  <bowbow99@gmail.com>
 
 	* lisp : fix type-specifier eql
