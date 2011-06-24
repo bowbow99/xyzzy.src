@@ -40,7 +40,8 @@ Just load this file.
              ,form
            (,type (e)
             (setq *error* e)))
-         (unless *error*
+         (if *error*
+           (incf *test-count*)
            (error "Test failed: ~S~2%Expected: signal ~S~2%Actually: returned normally."
                   ',form ',type)))
      (setq *error* nil)))
