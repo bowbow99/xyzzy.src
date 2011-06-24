@@ -289,6 +289,24 @@ special_bind::~special_bind ()
     }
 }
 
+
+bool inline
+type_declaration_p (lisp sexp)
+{
+  lisp x = xcar (sexp);
+  if (x == Qtype)
+    return true;
+
+  for (lisp s = xsymbol_value (Vsi_declaration_identifier_list);
+       consp (s);
+       s = xcdr (s))
+    {
+      if (x == s)
+        return false;
+    }
+  return true;
+}
+
 static lisp
 declare_progn (lisp body, lex_env &lex, int can_doc)
 {
@@ -330,14 +348,18 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
                   nvars++;
                 QUIT;
               }
-          else if (xcar (t) == Qtype)
-            for (t = xcdr (xcdr (t)); consp (t); t = xcdr (t))
-              {
-                lisp sym = xcar (t);
-                if (symbolp (sym))
-                  ntypes++;
-                QUIT;
-              }
+          else if (type_declaration_p (t))
+            {
+              lisp vars = xcdr (t);
+              if (xcar (t) == Qtype)
+                vars = xcdr (vars);
+              for (; consp (vars); vars = xcdr (vars))
+                {
+                  if (symbolp (xcar (vars)))
+                    ntypes++;
+                  QUIT;
+                }
+            }
           QUIT;
         }
       QUIT;
@@ -413,12 +435,20 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
                           }
                       }
                   }
-              else if (xcar (t) == Qtype)
+              else if (type_declaration_p (t))
                 {
-                  lisp typespec = xcar (xcdr (t));
-                  for (t = xcdr (xcdr (t)); consp (t); t = xcdr (t))
+                  lisp typespec = xcar (t);
+                  lisp vars = xcdr (t);
+
+                  if (typespec == Qtype)
                     {
-                      lisp sym = xcar (t);
+                      typespec = xcar (vars);
+                      vars = xcdr (vars);
+                    }
+
+                  for (; consp (vars); vars = xcdr (vars))
+                    {
+                      lisp sym = xcar (vars);
                       if (symbolp (sym))
                         {
                           lisp x = xcons (typespec, Qnil);
