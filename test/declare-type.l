@@ -96,8 +96,20 @@ Just load this file.
       x))
   (check-global-x))
 
+(progn  ; type checking on (declare (TYPESPEC VAR))
+  (expect-eql 3
+    (let ((x 3))
+      (declare (fixnum x))
+      x))
+  (check-global-x)
 
-(progn  ; type checking + special
+  (expect-error type-error
+    (let ((x 3))
+      (declare (string x))
+      x))
+  (check-global-x))
+
+(progn  ; type checking on (declare (type TYPESPEC VAR)) + special
 
   ;; in one `declare` expression
   (expect-eql 3
@@ -141,8 +153,67 @@ Just load this file.
       (declare (type string x))
       (declare (special x))
       x))
+  (check-global-x))
+
+(progn  ; type checking on (declare (TYPESPEC VAR)) + special
+
+  ;; in one `declare` expression
+  (expect-eql 3
+    (let ((x 3))
+      (declare (special x)
+               (fixnum x))
+      x))
   (check-global-x)
-  )
+
+  (expect-eql 3
+    (let ((x 3))
+      (declare (fixnum x)
+               (special x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (special x)
+               (string x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (string x)
+               (special x))
+      x))
+  (check-global-x)
+
+  ;; in two separate `declare` expression
+  (expect-eql 3
+    (let ((x 3))
+      (declare (special x))
+      (declare (fixnum x))
+      x))
+  (check-global-x)
+
+  (expect-eql 3
+    (let ((x 3))
+      (declare (fixnum x))
+      (declare (special x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (special x))
+      (declare (string x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (string x))
+      (declare (special x))
+      x))
+  (check-global-x))
 
 
 (format t "~D tests all passed.~%" *test-count*)
