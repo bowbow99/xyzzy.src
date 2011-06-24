@@ -7,8 +7,6 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(proclaim declaim))
-  (export '(dynamic-extent ignore ignorable optimize ftype
-            inline notinline))
   (export '(compilation-speed debug safety space speed)))
 
 (in-package "system")
