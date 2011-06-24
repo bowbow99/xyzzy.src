@@ -379,6 +379,10 @@ init_symbol_value_once ()
   init_math_symbols ();
   init_readtable ();
 
+  xsymbol_value (Vsi_declaration_identifier_list) =
+    make_list (Qdeclaration, Qoptimize, Qspecial, Qtype, Qftype, Qignore, Qignorable,
+               Qdynamic_extent, Qinline, Qnotinline);
+
   xsymbol_value (Qchar_code_limit) = make_fixnum (CHAR_LIMIT);
 
   xsymbol_value (Qarray_rank_limit) = make_fixnum (ARRAY_RANK_LIMIT);
