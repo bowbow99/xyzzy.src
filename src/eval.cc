@@ -289,11 +289,30 @@ special_bind::~special_bind ()
     }
 }
 
+
+bool inline
+type_declaration_p (lisp sexp)
+{
+  lisp x = xcar (sexp);
+  if (x == Qtype)
+    return true;
+
+  for (lisp s = xsymbol_value (Vsi_declaration_identifier_list);
+       consp (s);
+       s = xcdr (s))
+    {
+      if (x == xcar (s))
+        return false;
+    }
+  return true;
+}
+
 static lisp
 declare_progn (lisp body, lex_env &lex, int can_doc)
 {
   int nvars = 0;
   int nspecials = 0;
+  int ntypes = 0;
 
   for (lisp e = lex.lex_var; e != lex.lex_ltail; e = xcdr (e))
     {
@@ -319,7 +338,9 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
       for (x = xcdr (x); consp (x); x = xcdr (x))
         {
           lisp t = xcar (x);
-          if (consp (t) && xcar (t) == Qspecial)
+          if (!consp (t))
+            continue;
+          if (xcar (t) == Qspecial)
             for (t = xcdr (t); consp (t); t = xcdr (t))
               {
                 lisp sym = xcar (t);
@@ -327,18 +348,32 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
                   nvars++;
                 QUIT;
               }
+          else if (type_declaration_p (t))
+            {
+              lisp vars = xcdr (t);
+              if (xcar (t) == Qtype)
+                vars = xcdr (vars);
+              for (; consp (vars); vars = xcdr (vars))
+                {
+                  if (symbolp (xcar (vars)))
+                    ntypes++;
+                  QUIT;
+                }
+            }
           QUIT;
         }
       QUIT;
     }
 
-  if (!nspecials && !nvars)
+  if (!nspecials && !nvars && !ntypes)
     return Fprogn (nbody, lex);
 
   int nflags = (nspecials + nvars + sizeof (lisp) - 1) & ~(sizeof (lisp) - 1);
   char *oflags = (char *)alloca (2 * sizeof (lisp) * (nspecials + nvars) + nflags);
   lisp *save = (lisp *)(oflags + nflags);
   int i = 0, j = 0;
+
+  lisp type_checks = Qnil;
 
   if (nspecials)
     {
@@ -362,7 +397,7 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
         }
     }
 
-  if (nvars)
+  if (nvars || ntypes)
     {
       doc = can_doc;
       for (; consp (body); body = xcdr (body))
@@ -380,7 +415,9 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
           for (x = xcdr (x); consp (x); x = xcdr (x))
             {
               lisp t = xcar (x);
-              if (consp (t) && xcar (t) == Qspecial)
+              if (!consp (t))
+                continue;
+              if (xcar (t) == Qspecial)
                 for (t = xcdr (t); consp (t); t = xcdr (t))
                   {
                     lisp sym = xcar (t);
@@ -398,17 +435,42 @@ declare_progn (lisp body, lex_env &lex, int can_doc)
                           }
                       }
                   }
+              else if (type_declaration_p (t))
+                {
+                  lisp typespec = xcar (t);
+                  lisp vars = xcdr (t);
+
+                  if (typespec == Qtype)
+                    {
+                      typespec = xcar (vars);
+                      vars = xcdr (vars);
+                    }
+
+                  for (; consp (vars); vars = xcdr (vars))
+                    {
+                      lisp sym = xcar (vars);
+                      if (symbolp (sym))
+                        {
+                          lisp x = xcons (typespec, Qnil);
+                          x = xcons (sym, x);
+                          x = xcons (Qcheck_type, x);
+                          type_checks = xcons (x, type_checks);
+                        }
+                    }
+                }
             }
         }
     }
 
-  if (!i)
+  if (!i && (type_checks == Qnil))
     return Fprogn (body, lex);
 
   assert (i <= 2 * (nvars + nspecials));
   protect_gc gcpro (save, i);
   special_bind sb (save, oflags, i);
-  return Fprogn (body, lex);
+
+  type_checks = xcons (Sprogn, type_checks);
+  return Fprogn (xcons (type_checks, body), lex);
 }
 
 static lisp
