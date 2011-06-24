@@ -143,6 +143,8 @@ static symbols lsp[] =
   MAKE_SYMBOL2Q (macro),
   MAKE_SYMBOL2Q (special),
   MAKE_SYMBOL2Q (declare),
+  MAKE_SYMBOL2Q (type),
+  MAKE_SYMBOL2Q (check-type),
   MAKE_SYMBOL2Q (toplevel),
   MAKE_SYMBOL2Q (exit-this-level),
   DEFCONST2Q (call-arguments-limit),
