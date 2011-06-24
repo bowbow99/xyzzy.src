@@ -96,6 +96,44 @@ Just load this file.
       x))
   (check-global-x))
 
+(progn  ; Not a type declaration nor a special declaration
+  (expect-eql 3
+    (let ((x 3))
+      (declare (ignorable x))
+      x))
+
+  ;; NOTE: Parhaps this should signal an error or a warning. But no such
+  ;; thing is implemented and just ignored ATM.
+  (expect-eql 3
+    (let ((x 3))
+      (declare (ignore x))
+      x))
+
+  (expect-eql 3
+    (let ((x 3))
+      (declare (dynamic-extent x))
+      x))
+
+  (expect-eql 3
+    (let ((x 3))
+      (declare (optimize (speed 2) (safety 2) (debug 2)))
+      x))
+
+  (expect-eql 3
+    (labels ((x () 3))
+      (declare (ftype (function () fixnum) x))
+      (x)))
+
+  (expect-eql 3
+    (labels ((x () 3))
+      (declare (inline x))
+      (x)))
+
+  (expect-eql 3
+    (labels ((x () 3))
+      (declare (notinline x))
+      (x))))
+
 (progn  ; type checking on (declare (TYPESPEC VAR))
   (expect-eql 3
     (let ((x 3))
