@@ -301,7 +301,7 @@ type_declaration_p (lisp sexp)
        consp (s);
        s = xcdr (s))
     {
-      if (x == s)
+      if (x == xcar (s))
         return false;
     }
   return true;
