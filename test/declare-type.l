@@ -58,6 +58,90 @@ Just load this file.
   `(expect-eql :global-x x))
 
 
+(progn  ; plain lexical binding
+  (expect-eql 3
+    (let ((x 3))
+      x))
+  (check-global-x)
+
+  (expect-eql :global-x
+    (let ((x 3))
+      (dynamic-x)))
+  (check-global-x))
+
+(progn  ; special binding
+  (expect-eql 3
+    (let ((x 3))
+      (declare (special x))
+      x))
+  (check-global-x)
+
+  (expect-eql 3
+    (let ((x 3))
+      (declare (special x))
+      (dynamic-x)))
+  (check-global-x))
+
+(progn  ; type checking on (declare (type TYPESPEC VAR))
+  (expect-eql 3
+    (let ((x 3))
+      (declare (type fixnum x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (type string x))
+      x))
+  (check-global-x))
+
+
+(progn  ; type checking + special
+
+  ;; in one `declare` expression
+  (expect-eql 3
+    (let ((x 3))
+      (declare (special x)
+               (type fixnum x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (special x)
+               (type string x))
+      x))
+  (check-global-x)
+
+  ;; in two separate `declare` expressions
+  (expect-eql 3
+    (let ((x 3))
+      (declare (special x))
+      (declare (type fixnum x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (special x))
+      (declare (type string x))
+      x))
+  (check-global-x)
+
+  (expect-eql 3
+    (let ((x 3))
+      (declare (type fixnum x))
+      (declare (special x))
+      x))
+  (check-global-x)
+
+  (expect-error type-error
+    (let ((x 3))
+      (declare (type string x))
+      (declare (special x))
+      x))
+  (check-global-x)
+  )
 
 
 (format t "~D tests all passed.~%" *test-count*)
