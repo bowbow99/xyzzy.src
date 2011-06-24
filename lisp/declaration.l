@@ -11,14 +11,12 @@
 
 (in-package "system")
 
-(defvar *ignorable-declarations* nil
-  "List of declaration identifiers those are declared as `declaration`.")
 
 (defun register-declaration-identifier (identifiers)
   (dolist (id identifiers)
     (unless (symbolp id)
       (error 'type-error :datum id :expected-type 'symbol))
-    (pushnew id *ignorable-declarations*)))
+    (pushnew id *declaration-identifier-list*)))
 
 (defparameter *optimize-quality*
   '((speed . 2)
@@ -60,7 +58,7 @@
                    (warn "グローバルに `~S' はダメっす" identifier)
                    do-nothing)
                   (t
-                   (unless (member identifier *ignorable-declarations*)
+                   (unless (member identifier *declaration-identifier-list*)
                      (warn "その宣言知らんから無視しとく: ~S" identifier))
                    do-nothing))
                 (cdr decl-spec)))))
